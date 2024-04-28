@@ -14,6 +14,11 @@ class Music extends Model
         $this->belongsTo(artist::class);
     }
 
+    public function album()
+    {
+        $this->belongsTo(Album::class);
+    }
+
     protected $fillable = [
         'name',
         'song_mp3',

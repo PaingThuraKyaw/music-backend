@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('artist');
             $table->string('artist_image');
+            $table->longText('about');
+            $table->string('birth');
             $table->timestamps();
         });
     }

@@ -29,7 +29,10 @@ class ArtistController extends Controller
 
         $validation = Validator::make($request->all(), [
             'artist' => 'required',
-            'artist_image' => 'required|image'
+            'artist_image' => 'required|image',
+            'about' => 'required',
+            'birth' => 'required'
+
         ]);
 
         if ($validation->fails()) {
@@ -42,10 +45,12 @@ class ArtistController extends Controller
         try {
             $artist = new artist();
             $artist->artist = $request->artist;
+            $artist->about = $request->about;
+            $artist->birth = $request->birth;
             if ($request->hasFile('artist_image')) {
                 $image = $request->file('artist_image');
-                $fileName = time() . '_' . $image->getClientOriginalName();
-                $imageStore = $image->storeAs('public/artist', $fileName);
+                // $fileName = time() . '_' . $image->getClientOriginalName();
+                $imageStore = $image->store('public/artist');
                 $artist->artist_image = $imageStore;
             }
             $artist->save();
@@ -55,6 +60,9 @@ class ArtistController extends Controller
                 'data' => $artist
             ]);
         } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong!'
+            ], 500);
         }
     }
 

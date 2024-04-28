@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\MusicController;
@@ -26,5 +27,9 @@ Route::prefix('/v1/')->group(function () {
     Route::prefix('/artist')->controller(ArtistController::class)->group(function () {
         Route::get('/','index');
         Route::post('/', 'store');
+    });
+
+    Route::prefix('/album')->controller(AlbumController::class)->group(function(){
+        Route::post('/','store');
     });
 });
