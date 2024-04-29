@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MusicResource;
 use App\Models\artist;
 use App\Models\Music;
 use Illuminate\Http\Request;
@@ -14,7 +15,26 @@ class MusicController extends Controller
      */
     public function index()
     {
-        
+        $music = new Music();
+        if (request()->search) {
+            $searchTerm = request()->search;
+            // $music = $music->whereHas('artist', function ($query) use ($searchTerm) {
+            //     $query->where('artist', 'like', "%$searchTerm%");
+            // });
+
+            $music = $music->where('name', 'like', '%' . $searchTerm . '%')->orWhereHas('artist',function($query) use($searchTerm) {
+                $query->where('artist','like',"%$searchTerm%");
+            });
+
+            return response()->json([
+                'message' => 'Music',
+                'data' => MusicResource::collection($music->get())
+            ]);
+        }
+        return response()->json([
+            'message' =>  'Music!',
+            'data' => MusicResource::collection($music->all())
+        ]);
     }
 
     /**
@@ -26,7 +46,8 @@ class MusicController extends Controller
             'name' => 'required',
             'song_mp3' => 'required',
             'description' => 'required',
-            'song_image' => 'required|image'
+            'song_image' => 'required|image',
+            'album_id' => 'required'
         ]);
 
         if ($validate->fails()) {
@@ -55,7 +76,7 @@ class MusicController extends Controller
             $image =  $songImage->storeAs('public/music/images', $songImageName);
             $music->song_image = $image;
         }
-
+        $music->album_id = $request->album_id;
         $music->save();
 
 

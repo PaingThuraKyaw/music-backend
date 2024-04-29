@@ -21,6 +21,7 @@ Route::prefix('/v1/')->group(function () {
 
 
     Route::prefix('/music')->controller(MusicController::class)->group(function () {
+        Route::get('/','index');
         Route::post('/', 'store');
     });
 

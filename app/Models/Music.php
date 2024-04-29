@@ -11,12 +11,12 @@ class Music extends Model
 
     public function artist()
     {
-        $this->belongsTo(artist::class);
+    return     $this->belongsTo(artist::class);
     }
 
     public function album()
     {
-        $this->belongsTo(Album::class);
+     return    $this->belongsTo(Album::class);
     }
 
     protected $fillable = [
