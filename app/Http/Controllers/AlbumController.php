@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\artist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -22,7 +23,7 @@ class AlbumController extends Controller
     public function store(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'album' => 'required',
+            'album' => 'required|unique:albums,album',
             'album_image' => 'required|image',
             'artist_id' => 'required',
         ]);
@@ -32,6 +33,13 @@ class AlbumController extends Controller
                 'message' => $validation->errors()
             ]);
         };
+
+        $art =  artist::find($request->artist_id);
+        if (!$art) {
+            return response()->json([
+                'message' => 'Artist Not Found'
+            ]);
+        }
 
 
         $album = new Album();
@@ -48,7 +56,6 @@ class AlbumController extends Controller
             'message' => 'Successfully Album create',
             'data' =>  $album
         ]);
-
     }
 
     /**

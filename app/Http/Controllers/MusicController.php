@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\MusicResource;
+use App\Models\Album;
 use App\Models\artist;
 use App\Models\Music;
 use Illuminate\Http\Request;
@@ -13,27 +14,29 @@ class MusicController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $music = new Music();
-        if (request()->search) {
-            $searchTerm = request()->search;
-            // $music = $music->whereHas('artist', function ($query) use ($searchTerm) {
-            //     $query->where('artist', 'like', "%$searchTerm%");
-            // });
+        $music = Music::query(); // Initialize a query builder instance
 
-            $music = $music->where('name', 'like', '%' . $searchTerm . '%')->orWhereHas('artist',function($query) use($searchTerm) {
-                $query->where('artist','like',"%$searchTerm%");
-            });
-
-            return response()->json([
-                'message' => 'Music',
-                'data' => MusicResource::collection($music->get())
-            ]);
+        if ($request->search) {
+            $searchTerm = $request->search;
+            $music->where('name', 'like', '%' . $searchTerm . '%')
+                ->orWhereHas('artist', function ($query) use ($searchTerm) {
+                    $query->where('artist', 'like', "%$searchTerm%");
+                });
         }
+
+        // Paginate the results
+        $music = $music->paginate($request->size); // Use paginate() here
+
         return response()->json([
-            'message' =>  'Music!',
-            'data' => MusicResource::collection($music->all())
+            'message' => 'Music',
+            'data' => MusicResource::collection($music),
+            'pagination' => [
+                'page' => $music->currentPage(),
+                'totalPage' => $music->total(),
+                'size' => $music->perPage(),
+            ]
         ]);
     }
 
@@ -56,27 +59,42 @@ class MusicController extends Controller
             ]);
         }
 
+        $art = artist::find($request->artist_id);
+         if(!$art){
+            return response()->json([
+                'message' => 'Artist Not Found'
+            ]);
+         }
+
+
+         $album = Album::find($request->album_id);
+         if(!$album){
+            return response()->json([
+                'message' => 'Album Not Found'
+            ],404);
+         }
+
         $music = new Music();
         $music->name = $request->name;
         $music->description = $request->description;
-        $music->artist_id = $request->artist_id;
+        $music->artist_id = $art->id;
         $music->song_mp3 = ''; // Or provide some other default value
 
 
         if ($request->file('song_mp3')) {
             $songMp3 = $request->file('song_mp3');
-            $songMp3Name = time() . '_' . $songMp3->getClientOriginalName();
+            $songMp3Name = time() . '_' . rand() . $songMp3->getClientOriginalName();
             $audio =  $songMp3->storeAs('public/music/audio', $songMp3Name);
             $music->song_mp3 = $audio;
         }
 
         if ($request->hasFile('song_image')) {
             $songImage = $request->file('song_image');
-            $songImageName = time() . '_' . $songImage->getClientOriginalName();
+            $songImageName = time() . '_' . rand() . $songImage->getClientOriginalName();
             $image =  $songImage->storeAs('public/music/images', $songImageName);
             $music->song_image = $image;
         }
-        $music->album_id = $request->album_id;
+        $music->album_id = $album->id;
         $music->save();
 
 

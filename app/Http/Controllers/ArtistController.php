@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ArtistResource;
 use App\Models\artist;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class ArtistController extends Controller
         $artist = new artist();
         return response()->json([
             'message' => 'All artists',
-            'data' => $artist->all()
+            'data' => ArtistResource::collection($artist->all())
         ]);
     }
 
@@ -28,7 +29,7 @@ class ArtistController extends Controller
     {
 
         $validation = Validator::make($request->all(), [
-            'artist' => 'required',
+            'artist' => 'required|unique:artists,artist',
             'artist_image' => 'required|image',
             'about' => 'required',
             'birth' => 'required'

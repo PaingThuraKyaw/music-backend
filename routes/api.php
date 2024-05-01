@@ -20,7 +20,7 @@ Route::prefix('/v1/')->group(function () {
     Route::post('reset_password', [AuthController::class, "reset_password"])->name("password.reset");
 
 
-    Route::prefix('/music')->controller(MusicController::class)->group(function () {
+    Route::prefix('music')->controller(MusicController::class)->group(function () {
         Route::get('/','index');
         Route::post('/', 'store');
     });
