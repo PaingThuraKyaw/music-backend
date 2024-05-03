@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Models\artist;
 use Illuminate\Http\Request;
@@ -14,7 +15,11 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        //
+        $album = new Album();
+        return response()->json([
+            'message' => 'Albumn show!',
+            'data' => AlbumResource::collection($album->all())
+        ], 200);
     }
 
     /**
@@ -61,9 +66,14 @@ class AlbumController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Album $album)
+    public function show(Request $request)
     {
-        //
+        $album = Album::findOrFail($request->id);
+
+        return response()->json([
+            'message' => "Album",
+            'data' => new AlbumResource($album)
+        ], 200);
     }
 
     /**

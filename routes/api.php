@@ -28,9 +28,13 @@ Route::prefix('/v1/')->group(function () {
     Route::prefix('/artist')->controller(ArtistController::class)->group(function () {
         Route::get('/','index');
         Route::post('/', 'store');
+        Route::get('/{id}' , 'show' );
     });
 
     Route::prefix('/album')->controller(AlbumController::class)->group(function(){
         Route::post('/','store');
+        Route::get('/','index');
+        Route::get('/{id}' , 'show');
+        
     });
 });

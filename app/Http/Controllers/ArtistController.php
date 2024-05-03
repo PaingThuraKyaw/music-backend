@@ -72,7 +72,12 @@ class ArtistController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $artist = artist::findOrFail($id);
+
+        return response()->json([
+            'message' => 'Artist detail',
+            'data'  => new ArtistResource($artist)
+        ]);
     }
 
     /**
