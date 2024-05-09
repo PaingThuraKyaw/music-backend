@@ -15,12 +15,12 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user()->tokenCan('role:user')) {
-            return $next($request);
+        if (!auth()->user()->tokenCan('role:user')) {
+            return response()->json([
+                'message' => "Unauthorized"
+            ], 401);
         }
 
-        return response()->json([
-            'message' => "Unauthorized"
-        ], 401);
+        return $next($request);
     }
 }
