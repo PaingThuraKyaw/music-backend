@@ -6,6 +6,7 @@ use App\Http\Resources\ArtistResource;
 use App\Models\artist;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ArtistController extends Controller
@@ -85,7 +86,64 @@ class ArtistController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Find the artist by ID
+        $artist = artist::find($id);
+
+        // Check if the artist exists
+        if (!$artist) {
+            return response()->json([
+                'message' => "Artist not found",
+            ], 404); // 404 status code indicates resource not found
+        }
+
+        // Validate request data
+        $validation = Validator::make($request->all(), [
+            'artist' => 'required|unique:artists,artist,' . $id,
+            'about' => 'required',
+            'birth' => 'required'
+        ]);
+
+        // If validation fails, return error response
+        if ($validation->fails()) {
+            return response()->json([
+                'message' => $validation->errors()
+            ], 400); // 400 status code indicates bad request
+        }
+
+        try {
+
+
+            // Update artist details
+            $artist->artist = $request->artist;
+            $artist->about = $request->about;
+            $artist->birth = $request->birth;
+
+            // Handle artist image update
+            if ($request->hasFile('artist_image')) {
+
+                if ($artist->artist_image) {
+                    Storage::delete($artist->artist_image);
+                }
+
+                $image = $request->file('artist_image');
+                $imageStore = $image->store('public/artist');
+                $artist->artist_image = $imageStore;
+            }
+
+            // Save the updated artist
+            $artist->save();
+
+            // Return success response
+            return response()->json([
+                'message' => "Artist successfully updated",
+                'data' => $artist
+            ]);
+        } catch (\Exception $e) {
+            // If an exception occurs, return error response
+            return response()->json([
+                'message' => 'Something went wrong!'
+            ], 500); // 500 status code indicates internal server error
+        }
     }
 
     /**
@@ -93,9 +151,22 @@ class ArtistController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $artist = artist::find($id);
+
+        if (!$artist) {
+            return response()->json([
+                'message' => "Artist not found",
+            ], 500);
+        }
+
+        if ($artist->artist_image) {
+            Storage::delete($artist->artist_image);
+        }
+
+        $artist->delete();
+
+        return response()->json([
+            'message' => 'Delete artist'
+        ]);
     }
 }
-
-
-// public/1714190816_356379691_810884177240139_2585504872274285403_n.jpg

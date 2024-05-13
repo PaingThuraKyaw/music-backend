@@ -64,41 +64,26 @@ class AdminController extends Controller
                 'message' => $validate->errors()
             ], 400);
         }
+        try {
 
-        $admin = Admin::where('email', $request->email)->first();
+            $admin = Admin::where('email', $request->email)->first();
 
-        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            if (!$admin || !Hash::check($request->password, $admin->password)) {
+                return response()->json([
+                    'message' => 'Invalid credentials',
+                ], 401);
+            }
+
+            $token = $admin->createToken('AdminTokenPhitTl');
+
             return response()->json([
-                'message' => 'Invalid credentials',
-            ], 401);
+                'message' => 'Login successful',
+                'token' => $token
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Login Fail',
+            ]);
         }
-
-        $token = $admin->createToken('AdminTokenPhitTl');
-
-        return response()->json([
-            'message' => 'Login successful',
-            'token' => $token
-        ]);
-
-        // try {
-        //     $admin = Admin::where('email', $request->email)->first();
-
-        //     if (!$admin || !Hash::check($request->password, $admin->password)) {
-        //         return response()->json([
-        //             'message' => 'Invalid credentials',
-        //         ], 401);
-        //     }
-
-        //     $token = $admin->createToken('AdminTokenPhitTl');
-
-        //     return response()->json([
-        //         'message' => 'Login successful',
-        //         'token' => $token
-        //     ]);
-        // } catch (Exception $e) {
-        //     return response()->json([
-        //         'message' => 'Login Fail'
-        //     ], 500);
-        // }
     }
 }
