@@ -6,6 +6,7 @@ use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Models\artist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AlbumController extends Controller
@@ -39,6 +40,7 @@ class AlbumController extends Controller
             ]);
         };
 
+        // artist condition
         $art =  artist::find($request->artist_id);
         if (!$art) {
             return response()->json([
@@ -46,13 +48,13 @@ class AlbumController extends Controller
             ]);
         }
 
-
+        // create albumn
         $album = new Album();
         $album->album = $request->album;
         $album->artist_id = $request->artist_id;
         if ($request->hasFile('album_image')) {
             $image = $request->file('album_image');
-            $imageStore = $image->store('public/artist');
+            $imageStore = $image->store('public/album');
             $album->album_image = $imageStore;
         }
         $album->save();
@@ -79,16 +81,74 @@ class AlbumController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Album $album)
+    public function update(Request $request, string $id)
     {
-        //
+        $album = Album::find($id);
+
+        if (!$album) {
+            return response()->json([
+                'message' => 'Album not found!',
+            ], 500);
+        }
+
+        $validation = Validator::make($request->all(), [
+            'album' => 'required',
+            'album_image' => 'required|image',
+            'artist_id' => 'required',
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'message' => $validation->errors()
+            ]);
+        };
+
+
+
+        $art =  artist::find($request->artist_id);
+        if (!$art) {
+            return response()->json([
+                'message' => 'Artist Not Found'
+            ]);
+        }
+
+        $album->album = $request->album;
+        $album->artist_id = $art->id;
+
+        if ($request->hasFile('album_image')) {
+            if ($album->album_image) {
+                Storage::delete($album->album_image);
+            }
+
+            $image = $request->file('album_image');
+            $imageStore = $image->store('public/album');
+            $album->album_image = $imageStore;
+        }
+
+        $album->update();
+
+        return response()->json([
+            'message' => "Successfully album update",
+            'data' => $album
+        ], 201);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Album $album)
+    public function destroy(string $id)
     {
-        //
+        $album = Album::find($id);
+
+        if ($album->album_image) {
+            Storage::delete($album->album_image);
+        }
+
+        $album->delete();
+
+        return response()->json([
+            'message' => 'Delete artist'
+        ]);
+
     }
 }
