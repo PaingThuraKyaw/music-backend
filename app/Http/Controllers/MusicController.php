@@ -131,9 +131,9 @@ class MusicController extends Controller
 
         $validate = Validator::make($request->all(), [
             'name' => 'required',
-            // 'song_mp3' => 'required',
+            'song_mp3' => 'required',
             'description' => 'required',
-            // 'song_image' => 'required|image',
+            'song_image' => 'required|image',
             'album_id' => 'required'
         ]);
 
