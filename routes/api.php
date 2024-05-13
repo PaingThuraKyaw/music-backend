@@ -25,30 +25,33 @@ Route::prefix('/v1/')->group(function () {
 
 
     // admin auth
-    Route::post('admin-register',[AdminController::class , 'register' ]);
+    Route::post('admin-register', [AdminController::class, 'register']);
     Route::post('admin-login', [AdminController::class, 'login']);
 
 
     // music
     Route::prefix('music')->controller(MusicController::class)->group(function () {
-        Route::get('/','index');
+        Route::get('/', 'index');
         Route::post('/', 'store')->middleware(['auth:sanctum']);
+        Route::patch('/{id}','update')->middleware(['auth:sanctum']);
+        Route::delete('/{id}', 'destroy')->middleware(['auth:sanctum']);
     });
 
     // artist
     Route::prefix('/artist')->controller(ArtistController::class)->group(function () {
-        Route::get('/','index');
+        Route::get('/', 'index');
         Route::post('/', 'store')->middleware(['auth:sanctum']);
-        Route::patch('/{id}', 'update');
-        Route::get('/{id}' , 'show' );
-        Route::delete('/{id}', 'destroy');
+        Route::patch('/{id}', 'update')->middleware(['auth:sanctum']);
+        Route::get('/{id}', 'show');
+        Route::delete('/{id}', 'destroy')->middleware(['auth:sanctum']);
     });
 
     // album
-    Route::prefix('/album')->controller(AlbumController::class)->group(function(){
-        Route::post('/','store')->middleware(['auth:sanctum']);
-        Route::get('/','index');
-        Route::get('/{id}' , 'show');
-
+    Route::prefix('/album')->controller(AlbumController::class)->group(function () {
+        Route::post('/', 'store')->middleware(['auth:sanctum']);
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::patch('/{id}', 'update')->middleware(['auth:sanctum']);
+        Route::delete('/{id}', 'c')->middleware(['auth:sanctum']);
     });
 });

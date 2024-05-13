@@ -7,6 +7,7 @@ use App\Models\Album;
 use App\Models\artist;
 use App\Models\Music;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class MusicController extends Controller
@@ -60,19 +61,19 @@ class MusicController extends Controller
         }
 
         $art = artist::find($request->artist_id);
-         if(!$art){
+        if (!$art) {
             return response()->json([
                 'message' => 'Artist Not Found'
             ]);
-         }
+        }
 
 
-         $album = Album::find($request->album_id);
-         if(!$album){
+        $album = Album::find($request->album_id);
+        if (!$album) {
             return response()->json([
                 'message' => 'Album Not Found'
-            ],404);
-         }
+            ], 404);
+        }
 
         $music = new Music();
         $music->name = $request->name;
@@ -119,7 +120,73 @@ class MusicController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $music = Music::find($id);
+
+        if (!$music) {
+            return response()->json([
+                'message' => 'Music Not Found'
+            ]);
+        }
+
+
+        $validate = Validator::make($request->all(), [
+            'name' => 'required',
+            // 'song_mp3' => 'required',
+            'description' => 'required',
+            // 'song_image' => 'required|image',
+            'album_id' => 'required'
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => $validate->errors()
+            ]);
+        }
+
+        $album = Album::find($request->album_id);
+
+        if (!$album) {
+            return response()->json([
+                'message' => 'Album Not Found'
+            ]);
+        }
+
+        $music->name = $request->name;
+        $music->description = $request->description;
+        $music->album_id = $album->id;
+
+
+        if ($request->hasFile('song_image')) {
+            if ($request->song_image) {
+                Storage::delete($request->song_image);
+            }
+
+            $songImage = $request->file('song_image');
+            $songImageName = time() . '_' . rand() . $songImage->getClientOriginalName();
+            $image =  $songImage->storeAs('public/music/images', $songImageName);
+            $music->song_image = $image;
+        }
+
+
+        if ($request->hasFile('song_mp3')) {
+            if ($request->song_mp3) {
+                Storage::delete($request->song_mp3);
+            }
+
+            $songMp3 = $request->file('song_mp3');
+            $songMp3Name = time() . '_' . rand() . $songMp3->getClientOriginalName();
+            $audio =  $songMp3->storeAs('public/music/audio', $songMp3Name);
+            $music->song_mp3 = $audio;
+        }
+
+
+        $music->update();
+
+
+        return response()->json([
+            'message' => 'Update Successfully',
+            'music' => $music
+        ]);
     }
 
     /**
@@ -127,6 +194,26 @@ class MusicController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $music = Music::find($id);
+
+        if (!$music) {
+            return response()->json([
+                'message' => 'Music Not Found'
+            ]);
+        }
+
+        if ($music->song_image) {
+            Storage::delete($music->song_image);
+        }
+
+        if ($music->song_mp3) {
+            Storage::delete($music->song_mp3);
+        }
+
+        $music->delete();
+
+        return response()->json([
+            'message' => 'Delete Successfully'
+        ]);
     }
 }

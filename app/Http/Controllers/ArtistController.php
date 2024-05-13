@@ -99,6 +99,7 @@ class ArtistController extends Controller
         // Validate request data
         $validation = Validator::make($request->all(), [
             'artist' => 'required|unique:artists,artist,' . $id,
+            'artist_image' => 'sometimes|required|image',
             'about' => 'required',
             'birth' => 'required'
         ]);
