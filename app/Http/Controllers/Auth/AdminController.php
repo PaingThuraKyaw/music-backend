@@ -74,7 +74,7 @@ class AdminController extends Controller
                 ], 401);
             }
 
-            $token = $admin->createToken('AdminTokenPhitTl');
+            $token = $admin->createToken('AdminTokenPhitTl')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
