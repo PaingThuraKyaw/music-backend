@@ -1,13 +1,7 @@
- {
-    name: "Love Your Self",
-    artist: "Justin Biber",
-    song_mp3: loveYourSelf,
-    description:
-      "Bohemian Rhapsody is a song by the British rock band Queen. It was written by Freddie Mercury and released on their 1975 album 'A Night at the Opera'. The song is known for its unconventional structure, including operatic sections, hard rock elements, and ballad segments.",
-    song_image:
-      "https://naijay.com/wp-content/uploads/2022/07/Justin-Bieber-Love-Yourself-Mp3-Download-Lyrics-1024x576.jpg",
-    artist_image: "queen.jpg",
-  }
+> cp .env .env.example
+> composer install
+> php artisan key:generate
 
+.env မှာ set up လုပ်ပေး
+php artisan migrate
 
-https://www.youtube.com/shorts/jtwOUf10O1U

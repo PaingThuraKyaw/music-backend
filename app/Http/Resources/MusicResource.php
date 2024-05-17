@@ -27,7 +27,9 @@ class MusicResource extends JsonResource
             'description' => $this->description,
             'song_image' => url(str_replace('public', 'storage', $this->song_image)),
             'artist' => $artist->artist,
+            'artist_id' => $artist->id,
             'album' => $album->album,
+            'album_id' => $album->id,
             'release_date' => Carbon::parse($this->created_at, 'UTC')->isoFormat('MMM Do YYYY'),
         ];
     }

@@ -30,10 +30,10 @@ Route::prefix('/v1/')->group(function () {
 
 
     // music
-    Route::prefix('music')->controller(MusicController::class)->group(function () {
+    Route::prefix('/music')->controller(MusicController::class)->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store')->middleware(['auth:sanctum']);
-        Route::patch('/{id}','update')->middleware(['auth:sanctum']);
+        Route::put('/{id}','update')->middleware(['auth:sanctum']);
         Route::delete('/{id}', 'destroy')->middleware(['auth:sanctum']);
     });
 
@@ -52,6 +52,6 @@ Route::prefix('/v1/')->group(function () {
         Route::get('/', 'index');
         Route::get('/{id}', 'show');
         Route::patch('/{id}', 'update')->middleware(['auth:sanctum']);
-        Route::delete('/{id}', 'c')->middleware(['auth:sanctum']);
+        Route::delete('/{id}', 'destroy')->middleware(['auth:sanctum']);
     });
 });

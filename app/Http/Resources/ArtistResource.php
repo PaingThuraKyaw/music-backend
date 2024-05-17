@@ -23,7 +23,16 @@ class ArtistResource extends JsonResource
             'artist_image' => asset(str_replace('public', 'storage', $this->artist_image)),
             'about' => $this->about,
             'birth' => $this->birth,
-            'album' => $album,
+            'album' => $album->map(function ($alb) {
+                return [
+                    'id' => $alb->id,
+                    'artist_id' => $alb->artist_id,
+                    'album' => $alb->album,
+                    'album_image' => url(str_replace('public', 'storage', $alb->album_image)) ,
+                    'created_at' => $alb->created_at,
+                    'updated_at' => $alb->updated_at
+                ];
+            }),
         ];
     }
 }

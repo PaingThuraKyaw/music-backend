@@ -17,6 +17,7 @@ class MusicController extends Controller
      */
     public function index(Request $request)
     {
+
         $music = Music::query(); // Initialize a query builder instance
 
         if ($request->search) {
@@ -29,6 +30,7 @@ class MusicController extends Controller
 
         // Paginate the results
         $music = $music->paginate($request->size); // Use paginate() here
+
 
         return response()->json([
             'message' => 'Music',
@@ -50,7 +52,7 @@ class MusicController extends Controller
             'name' => 'required',
             'song_mp3' => 'required',
             'description' => 'required',
-            'song_image' => 'required|image',
+            'song_image' => 'required',
             'album_id' => 'required'
         ]);
 
@@ -118,23 +120,17 @@ class MusicController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request ,string $id)
     {
-        $music = Music::find($id);
-
-        if (!$music) {
-            return response()->json([
-                'message' => 'Music Not Found'
-            ]);
-        }
 
 
         $validate = Validator::make($request->all(), [
             'name' => 'required',
             'song_mp3' => 'required',
             'description' => 'required',
-            'song_image' => 'required|image',
-            'album_id' => 'required'
+            'song_image' => 'required',
+            'album_id' => 'required',
+            'artist_id' => 'required'
         ]);
 
         if ($validate->fails()) {
@@ -142,6 +138,15 @@ class MusicController extends Controller
                 'message' => $validate->errors()
             ]);
         }
+
+        $music = Music::find($request->id);
+
+        if (!$music) {
+            return response()->json([
+                'message' => 'Music Not Found'
+            ]);
+        }
+
 
         $album = Album::find($request->album_id);
 
@@ -151,10 +156,20 @@ class MusicController extends Controller
             ]);
         }
 
+        $artist = artist::find($request->artist_id);
+
+        if (!$artist) {
+            return response()->json([
+                'message' => 'Artist Not Found'
+            ]);
+        }
+
+
+
         $music->name = $request->name;
         $music->description = $request->description;
         $music->album_id = $album->id;
-
+        $music->artist_id = $artist->id;
 
         if ($request->hasFile('song_image')) {
             if ($request->song_image) {

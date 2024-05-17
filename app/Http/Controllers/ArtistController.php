@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ArtistResource;
+use App\Models\Album;
 use App\Models\artist;
+use App\Models\Music;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,12 +17,26 @@ class ArtistController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $artist = new artist();
+        $artist = artist::query(); // Initialize a query builder instance
+
+        if ($request->search) {
+            $searchTerm = $request->search;
+            $artist->where('artist', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $artist = $artist->paginate($request->size); // Use paginate() here
+
         return response()->json([
-            'message' => 'All artists',
-            'data' => ArtistResource::collection($artist->all())
+            'message' => 'Music',
+            'data' => ArtistResource::collection($artist),
+            'pagination' => [
+                'page' => $artist->currentPage(),
+                'totalPage' => $artist->total(),
+                'size' => $artist->perPage(),
+            ]
         ]);
     }
 
@@ -152,22 +169,61 @@ class ArtistController extends Controller
      */
     public function destroy(string $id)
     {
-        $artist = artist::find($id);
+        // Find the artist by ID
+        $artist = Artist::find($id);
 
+        // If artist not found, return error response
         if (!$artist) {
             return response()->json([
                 'message' => "Artist not found",
+            ], 404); // Use 404 for not found
+        }
+
+        // Retrieve albums associated with the artist
+        $albums = Album::where('artist_id', $artist->id)->get();
+
+        // Retrieve music associated with the artist
+        $music = Music::where('artist_id', $artist->id)->get();
+
+        // Use a transaction to ensure atomicity
+        DB::beginTransaction();
+        try {
+            // Delete artist's image if it exists
+            if ($artist->artist_image) {
+                Storage::delete($artist->artist_image);
+            }
+
+            // Iterate over albums and delete their images
+            foreach ($albums as $album) {
+                if ($album->album_image) {
+                    Storage::delete($album->album_image);
+                }
+                $album->delete(); // Delete the album
+            }
+
+            // Iterate over music and delete their records
+            foreach ($music as $track) {
+                $track->delete();
+            }
+
+            // Delete the artist
+            $artist->delete();
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Artist, their albums, and their music deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'An error occurred while deleting the artist, their albums, and their music',
+                'error' => $e->getMessage()
             ], 500);
         }
-
-        if ($artist->artist_image) {
-            Storage::delete($artist->artist_image);
-        }
-
-        $artist->delete();
-
-        return response()->json([
-            'message' => 'Delete artist'
-        ]);
     }
+
 }

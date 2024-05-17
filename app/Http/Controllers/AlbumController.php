@@ -14,13 +14,27 @@ class AlbumController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $album = new Album();
+        $album = Album::query(); // Initialize a query builder instance
+
+        if ($request->search) {
+            $searchTerm = $request->search;
+            $album->where('album', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the results
+        $album = $album->paginate($request->size); // Use paginate() here
+
         return response()->json([
-            'message' => 'Albumn show!',
-            'data' => AlbumResource::collection($album->all())
-        ], 200);
+            'message' => 'Music',
+            'data' => AlbumResource::collection($album),
+            'pagination' => [
+                'page' => $album->currentPage(),
+                'totalPage' => $album->total(),
+                'size' => $album->perPage(),
+            ]
+        ]);
     }
 
     /**
@@ -149,6 +163,5 @@ class AlbumController extends Controller
         return response()->json([
             'message' => 'Delete artist'
         ]);
-
     }
 }
